@@ -59,4 +59,65 @@ def Hotel_PMS_cancel_DepositRuleReservation(request):
         sql_value = gensql('insert','reservation.res_activity_log',s)
     return(json.dumps({'Status': 'Success', 'StatusCode': '200','Return': 'Record Updated Successfully','ReturnCode':'RUS'}, sort_keys=True, indent=4))
     
+def Hotel_PMS_Select_BlockFollowupDecisiondate(request):
+    datelist = []
+    d = request.json
+    sql =json.loads(dbget("select follow_date,decision_date FROM business_block.block_room where block_id = '"+str(d['block_id'])+"'"))
+    #print(sql)
+    date1 = datetime.datetime.strptime(sql[0]['follow_date'], '%Y-%m-%d').date()
+    date2 = datetime.datetime.strptime(sql[0]['decision_date'], '%Y-%m-%d').date()
+    businessdate = datetime.datetime.strptime(date[0]['roll_business_date'], '%Y-%m-%d').date()
+    #print(date1,date2,type(date1))
+    delta = date2 - date1         # timedelta
 
+    for i in range(delta.days + 1):
+        #print(i)
+        #print(date1 + datetime.timedelta(i))
+        datelist.append(str(date1 + datetime.timedelta(i)))
+        #date1 = date1 + datetime.timedelta(days=7)
+    print(datelist)
+    for i in datelist:
+        dateform = datetime.datetime.strptime(i, '%Y-%m-%d').date()
+        print(dateform)
+        if dateform == businessdate:
+    
+            return(json.dumps({'Status': 'Success', 'StatusCode': '200','Return': 'Record Valid','ReturnCode':'RV'}, sort_keys=True, indent=4))
+            
+    return(json.dumps({'Status': 'Success', 'StatusCode': '200','Return': 'Record InValid','ReturnCode':'RIV'}, sort_keys=True, indent=4))
+
+def Hotel_PMS_Select_Blockcutoffdatecutoffdays(request):
+    
+    datelist = []
+    d = request.json
+    businessdate = datetime.datetime.strptime(date[0]['roll_business_date'], '%Y-%m-%d').date()
+    sql =json.loads(dbget("   select block_room.cutoff_days,block_room.cutoff_date,business_block_definite.block_created_date \
+                           from business_block.business_block_definite, business_block.block_room \
+                           where business_block_definite.block_id = '"+str(d['block_id'])+"' and block_room.block_id='"+str(d['block_id'])+"'"))
+    print(sql)
+    initial=datetime.datetime.strptime(sql[0]['block_created_date'], '%Y-%m-%d').date()
+    date1 = initial + datetime.timedelta(days=1)
+    date2 = date1 + datetime.timedelta(days=sql[0]['cutoff_days'])
+    delta = date2-date1
+    if sql[0]['cutoff_date'] is not None:
+        dateform = datetime.datetime.strptime(sql[0]['cutoff_date'], '%Y-%m-%d').date()
+        print(sql[0]['cutoff_date'])
+        if dateform == businessdate:
+         return(json.dumps({'Status': 'Success', 'StatusCode': '200','Return': 'Record Valid','ReturnCode':'RV'}, sort_keys=True, indent=4))
+            
+    else:
+        pass
+    
+    if sql[0]['cutoff_days'] is not None:
+      
+        for i in range(delta.days + 1):
+        #print(i)
+            print(date1 + datetime.timedelta(i))
+        
+            if date1 + datetime.timedelta(i) == businessdate:
+                return(json.dumps({'Status': 'Success', 'StatusCode': '200','Return': 'Record Valid','ReturnCode':'RV'}, sort_keys=True, indent=4))
+        
+           
+    else:
+        pass
+    
+    return(json.dumps({'Status': 'Success', 'StatusCode': '200','Return': 'Record InValid','ReturnCode':'RIV'}, sort_keys=True, indent=4))
